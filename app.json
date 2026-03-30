@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "计数器",
+    "navigationBarTextStyle": "black"
+  },
+  "permission": {
+    "scope.bluetooth": {
+      "desc": "需要使用蓝牙扫描设备"
+    }
+  },
+  "requiredPrivateInfos": []
+}

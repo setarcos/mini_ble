@@ -1,0 +1,16 @@
+<view class="container">
+  <view class="ble-section">
+    <text class="section-title">BLE 设备扫描</text>
+    <view class="ble-input-group">
+      <input class="device-name-input" placeholder="输入设备名称（可选）" value="{{deviceName}}" bindinput="onDeviceNameInput" />
+      <button class="btn btn-scan" bindtap="onScanBLE">{{isScanning ? '停止扫描' : '开始扫描'}}</button>
+    </view>
+  </view>
+
+  <view class="debug-section">
+    <text class="section-title">调试信息</text>
+    <scroll-view class="debug-box" scroll-y>
+      <text class="debug-text">{{debugInfo}}</text>
+    </scroll-view>
+  </view>
+</view>
