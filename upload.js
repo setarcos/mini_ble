@@ -20,8 +20,8 @@ const ci = require('miniprogram-ci');
 
   const uploadResult = await ci.upload({
     project,
-    version: '1.1.0',
-    desc: '首次测试',
+    version: '1.1.1',
+    desc: '测试BLE灯',
     setting: {
       es6: true,
       minify: true,

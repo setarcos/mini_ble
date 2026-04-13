@@ -2,9 +2,14 @@
   <view class="ble-section">
     <text class="section-title">BLE 设备扫描</text>
     <view class="ble-input-group">
-      <input class="device-name-input" placeholder="输入设备名称（可选）" value="{{deviceName}}" bindinput="onDeviceNameInput" />
+      <input class="device-name-input" placeholder="输入设备名称" value="{{deviceName}}" bindinput="onDeviceNameInput" />
       <button class="btn btn-scan" bindtap="onScanBLE">{{isScanning ? '停止扫描' : '开始扫描'}}</button>
     </view>
+  </view>
+
+  <view class="switch-section" wx:if="{{switchEnabled}}">
+    <text class="section-title">设备控制</text>
+    <button class="btn btn-switch" bindtap="onSwitchToggle">开关 ({{switchValue}})</button>
   </view>
 
   <view class="debug-section">

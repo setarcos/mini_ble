@@ -66,3 +66,22 @@
   white-space: pre-wrap;
   word-break: break-all;
 }
+
+.switch-section {
+  margin-top: 40rpx;
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.btn-switch {
+  width: 100%;
+  height: 80rpx;
+  line-height: 80rpx;
+  font-size: 28rpx;
+  border-radius: 12rpx;
+  margin: 0;
+  background-color: #4CAF50;
+  color: #fff;
+}
