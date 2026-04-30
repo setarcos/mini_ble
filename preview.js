@@ -20,7 +20,7 @@ const ci = require('miniprogram-ci');
 
   const previewResult = await ci.preview({
     project,
-    version: '1.1.0',
+    version: '1.2.1',
     desc: '预览测试',
     setting: {
       es6: true,

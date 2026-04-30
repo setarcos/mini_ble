@@ -1,15 +1,57 @@
 <view class="container">
+  <!-- 设备扫描区域 -->
   <view class="ble-section">
     <text class="section-title">BLE 设备扫描</text>
     <view class="ble-input-group">
       <input class="device-name-input" placeholder="输入设备名称" value="{{deviceName}}" bindinput="onDeviceNameInput" />
       <button class="btn btn-scan" bindtap="onScanBLE">{{isScanning ? '停止扫描' : '开始扫描'}}</button>
     </view>
+
+    <!-- 设备类型选择 -->
+    <view class="device-type-section">
+      <text class="section-title">设备类型</text>
+      <picker mode="selector" range="{{deviceTypes}}" value="{{deviceTypeIndex}}" bindchange="onDeviceTypeChange">
+        <view class="picker-container">
+          <text>{{deviceType}}</text>
+        </view>
+      </picker>
+    </view>
   </view>
 
-  <view class="switch-section" wx:if="{{switchEnabled}}">
-    <text class="section-title">设备控制</text>
-    <button class="btn btn-switch" bindtap="onSwitchToggle">开关 ({{switchValue}})</button>
+  <!-- 设备控制区域 - 连接成功后显示 -->
+  <view wx:if="{{switchEnabled}}">
+    <!-- LED灯控制区域 -->
+    <view class="led-control-section" wx:if="{{deviceType === 'LED灯'}}">
+      <text class="section-title">LED灯控制</text>
+      <button class="btn btn-switch" bindtap="onSwitchToggle">开关 ({{switchValue === 0 ? '关' : '开'}})</button>
+    </view>
+
+    <!-- RGB灯控制区域 -->
+    <view class="rgb-control-section" wx:if="{{deviceType === 'RGB灯'}}">
+      <text class="section-title">RGB灯控制</text>
+
+      <!-- 开关控制 -->
+      <view class="control-row">
+        <button class="btn btn-switch" bindtap="onSwitchToggle">总开关 ({{switchValue === 0 ? '关' : '开'}})</button>
+      </view>
+
+      <!-- 颜色输入 -->
+      <view class="control-row">
+        <text>颜色 (R,G,B):</text>
+        <input class="color-input" placeholder="例如: 255,255,255" value="{{color}}" bindinput="onColorInput" />
+        <button class="btn btn-confirm" bindtap="onColorConfirm">设置</button>
+      </view>
+
+      <!-- 模式选择 -->
+      <view class="control-row">
+        <text>模式:</text>
+        <picker mode="selector" range="{{modes}}" range-key="name" value="{{mode}}" bindchange="onModeChange">
+          <view class="picker-container">
+            <text>{{modes[mode].name}}</text>
+          </view>
+        </picker>
+      </view>
+    </view>
   </view>
 
   <view class="debug-section">

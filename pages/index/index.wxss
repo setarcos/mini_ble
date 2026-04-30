@@ -85,3 +85,55 @@
   background-color: #4CAF50;
   color: #fff;
 }
+
+.device-type-section,
+.led-control-section,
+.rgb-control-section {
+  margin-top: 40rpx;
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+  flex-wrap: wrap;
+}
+
+.control-row > text {
+  font-size: 28rpx;
+  color: #666;
+  min-width: 80rpx;
+}
+
+.color-input {
+  flex: 1;
+  height: 70rpx;
+  border: 2rpx solid #ddd;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  font-size: 26rpx;
+  min-width: 300rpx;
+}
+
+.btn-confirm {
+  width: 140rpx;
+  height: 70rpx;
+  line-height: 70rpx;
+  font-size: 26rpx;
+  border-radius: 12rpx;
+  margin: 0;
+  background-color: #2196F3;
+  color: #fff;
+}
+
+.picker-container {
+  padding: 10rpx 20rpx;
+  background-color: #f5f5f5;
+  border-radius: 12rpx;
+  flex: 1;
+}
