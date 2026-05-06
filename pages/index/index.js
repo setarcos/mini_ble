@@ -295,10 +295,7 @@ Page({
     if (that.data.deviceType === 'RGB灯') {
       that.addDebugInfo('执行RGB灯开关控制')
       RGBDevice.writePowerToBLE(that, newValue)
-    } else if (that.data.deviceType === '蓝牙配网') {
-      that.addDebugInfo('执行蓝牙配网开关控制')
-      LEDDevice.writeLEDPower(that, newValue)
-    } else {
+    } else if (that.data.deviceType === 'LED灯') {
       that.addDebugInfo('执行LED灯开关控制')
       LEDDevice.writeLEDPower(that, newValue)
     }
