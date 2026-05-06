@@ -80,6 +80,27 @@ Page({
     const that = this
     that.setData({ isScanning: true, deviceId: '', serviceId: '', characteristicId: '', switchEnabled: false })
 
+    // 先清理之前的蓝牙监听器，避免重复触发
+    try {
+      wx.offBluetoothDeviceFound()
+    } catch (e) {
+      // 忽略可能的错误
+    }
+
+    wx.closeBluetoothAdapter({
+      fail: function() {
+        // 关闭失败可能是 already closed，继续下一步
+      }
+    })
+
+    // 等待 200ms 再重新初始化蓝牙适配器
+    setTimeout(function() {
+      that.initBluetooth()
+    }, 200)
+  },
+
+  initBluetooth() {
+    const that = this
     wx.openBluetoothAdapter({
       success() {
         that.addDebugInfo('蓝牙适配器已打开，开始扫描...')
@@ -89,7 +110,8 @@ Page({
             const name = device.name || device.localName || '未知设备'
             const targetName = that.data.deviceName.trim()
 
-            if (name.indexOf(targetName) !== -1) {
+            // 精确匹配设备名称
+            if (name === targetName) {
               that.addDebugInfo('发现设备：' + name + ' [' + device.deviceId + '] RSSI: ' + device.RSSI)
               that.connectToDevice(device.deviceId, name)
             }
@@ -255,7 +277,9 @@ Page({
     wx.stopBluetoothDevicesDiscovery({
       success() {
         that.addDebugInfo('扫描已停止')
-        that.setData({ isScanning: false })
+        // 清理蓝牙监听器
+        wx.offBluetoothDeviceFound()
+        that.setData({ isScanning: false, deviceId: '', serviceId: '', characteristicId: '', switchEnabled: false })
       }
     })
   },
