@@ -1,12 +1,33 @@
 require('dotenv').config();
 const ci = require('miniprogram-ci');
+const fs = require('fs');
 
 (async () => {
+  // 读取 project.config.json
+  const configPath = 'project.config.json';
+  let config = {};
+  let originalAppid = '';
+
+  try {
+    const configContent = fs.readFileSync(configPath, 'utf8');
+    config = JSON.parse(configContent);
+    originalAppid = config.appid || '';
+
+    // 如果环境变量中有 APPID，临时替换
+    if (process.env.APPID) {
+      config.appid = process.env.APPID;
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+      console.log('临时替换 appid 为:', process.env.APPID);
+    }
+  } catch (err) {
+    console.warn('读取 project.config.json 失败:', err.message);
+  }
+
   const project = new ci.Project({
     appid: process.env.APPID,
     type: 'miniProgram',
     projectPath: process.cwd(),
-    privateKeyPath: 'key/private.wxa9d13c0e644c1707.key',
+    privateKeyPath: 'key/private.key',
     ignores: [
       'node_modules/**/*',      // 忽略node_modules
       'upload.js',              // 忽略上传脚本
@@ -30,4 +51,15 @@ const ci = require('miniprogram-ci');
   });
 
   console.log('上传成功');
+
+  // 恢复 project.config.json
+  try {
+    if (originalAppid !== '') {
+      config.appid = originalAppid;
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+      console.log('已恢复 appid 为:', originalAppid);
+    }
+  } catch (err) {
+    console.warn('恢复 project.config.json 失败:', err.message);
+  }
 })();

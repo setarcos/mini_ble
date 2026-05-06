@@ -40,7 +40,7 @@
   },
   "compileType": "miniprogram",
   "libVersion": "2.25.4",
-  "appid": "wxa9d13c0e644c1707",
+  "appid": "from env",
   "projectname": "mini-prog",
   "condition": {}
 }
