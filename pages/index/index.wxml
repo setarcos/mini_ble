@@ -20,14 +20,35 @@
 
   <!-- 设备控制区域 - 连接成功后显示 -->
   <view wx:if="{{switchEnabled}}">
+    <!-- BLE配网控制区域 - 优先显示 -->
+    <view wx:if="{{wifiConfigEnabled}}" class="wifi-config-section">
+      <text class="section-title">WiFi配网</text>
+
+      <view class="control-row">
+        <text>SSID:</text>
+        <input class="wifi-input" placeholder="输入WiFi名称" value="{{ssid}}" bindinput="onSSIDInput" />
+      </view>
+
+      <view class="control-row">
+        <text>密码:</text>
+        <input class="wifi-input" type="password" placeholder="输入WiFi密码" value="{{password}}" bindinput="onPasswordInput" />
+      </view>
+
+      <view class="control-row">
+        <button class="btn btn-confirm" bindtap="onWifiConfigConfirm">发送配网信息</button>
+        <button class="btn btn-disconnect" bindtap="onWifiDisconnect">断开连接</button>
+      </view>
+    </view>
+
     <!-- LED灯控制区域 -->
-    <view class="led-control-section" wx:if="{{deviceType === 'LED灯'}}">
+    <view wx:elif="{{deviceType === 'LED灯'}}" class="led-control-section">
       <text class="section-title">LED灯控制</text>
       <button class="btn btn-switch" bindtap="onSwitchToggle">开关 ({{switchValue === 0 ? '关' : '开'}})</button>
+      <button class="btn btn-disconnect" bindtap="onWifiDisconnect">断开连接</button>
     </view>
 
     <!-- RGB灯控制区域 -->
-    <view class="rgb-control-section" wx:if="{{deviceType === 'RGB灯'}}">
+    <view wx:elif="{{deviceType === 'RGB灯'}}" class="rgb-control-section">
       <text class="section-title">RGB灯控制</text>
 
       <!-- 开关控制 -->
@@ -50,6 +71,10 @@
             <text>{{modes[mode].name}}</text>
           </view>
         </picker>
+      </view>
+
+      <view class="control-row">
+        <button class="btn btn-disconnect" bindtap="onWifiDisconnect">断开连接</button>
       </view>
     </view>
   </view>

@@ -10,6 +10,14 @@ Page({
     colorCharacteristicId: '',
     modeCharacteristicId: '',
     statusCharacteristicId: '',
+    // BLE配网相关
+    wifiConfigServiceId: '',
+    ssidCharacteristicId: '',
+    passwordCharacteristicId: '',
+    wifiStatusCharacteristicId: '',
+    wifiConfigEnabled: false,
+    ssid: '',
+    password: '',
     switchValue: 0,
     switchEnabled: false,
     isRGBDevice: false,
@@ -54,12 +62,110 @@ Page({
     })
   },
 
+  onSSIDInput(e) {
+    this.setData({
+      ssid: e.detail.value
+    })
+  },
+
+  onPasswordInput(e) {
+    this.setData({
+      password: e.detail.value
+    })
+  },
+
   onModeChange(e) {
     const mode = parseInt(e.detail.value)
     this.setData({ mode: mode })
     if (!this.data.isRGBDevice) return
     this.addDebugInfo('模式已切换为：' + (mode === 0 ? '关闭' : this.data.modes[mode].name))
     this.writeModeToBLE(mode)
+  },
+
+  onWifiConfigConfirm() {
+    const that = this
+    const ssid = that.data.ssid.trim()
+    const password = that.data.password.trim()
+
+    if (!ssid || !password) {
+      that.addDebugInfo('请填写完整的WiFi信息（SSID和密码）')
+      return
+    }
+
+    if (!that.data.wifiConfigEnabled) {
+      that.addDebugInfo('未找到BLE配网服务')
+      return
+    }
+
+    that.addDebugInfo('开始发送WiFi配置...')
+    that.addDebugInfo('SSID: ' + ssid)
+    that.writeSSIDToBLE(ssid)
+  },
+
+  writeSSIDToBLE(ssid) {
+    const that = this
+    const ssidCharId = that.data.ssidCharacteristicId
+    that.addDebugInfo('writeSSIDToBLE: characteristicId=' + ssidCharId + ', ssid=' + ssid)
+
+    if (!ssidCharId) {
+      that.addDebugInfo('错误：ssidCharacteristicId 未设置')
+      return
+    }
+
+    const buffer = new ArrayBuffer(ssid.length)
+    const view = new DataView(buffer)
+
+    for (let i = 0; i < ssid.length; i++) {
+      view.setUint8(i, ssid.charCodeAt(i))
+    }
+
+    wx.writeBLECharacteristicValue({
+      deviceId: this.data.deviceId,
+      serviceId: that.data.wifiConfigServiceId,
+      characteristicId: ssidCharId,
+      value: buffer,
+      success(res) {
+        that.addDebugInfo('SSID已发送，等待输入密码...')
+        // 写入SSID成功后，立即写入密码
+        setTimeout(function() {
+          that.writePasswordToBLE(that.data.password)
+        }, 300)
+      },
+      fail(err) {
+        that.addDebugInfo('SSID写入失败：' + err.errMsg)
+      }
+    })
+  },
+
+  writePasswordToBLE(password) {
+    const that = this
+    const passwordCharId = that.data.passwordCharacteristicId
+    that.addDebugInfo('writePasswordToBLE: characteristicId=' + passwordCharId + ', password=' + password)
+
+    if (!passwordCharId) {
+      that.addDebugInfo('错误：passwordCharacteristicId 未设置')
+      return
+    }
+
+    const buffer = new ArrayBuffer(password.length)
+    const view = new DataView(buffer)
+
+    for (let i = 0; i < password.length; i++) {
+      view.setUint8(i, password.charCodeAt(i))
+    }
+
+    wx.writeBLECharacteristicValue({
+      deviceId: this.data.deviceId,
+      serviceId: that.data.wifiConfigServiceId,
+      characteristicId: passwordCharId,
+      value: buffer,
+      success(res) {
+        that.addDebugInfo('WiFi配置已发送！设备将尝试连接...')
+      },
+      fail(err) {
+        that.addDebugInfo('密码写入失败：' + err.errMsg)
+      }
+    })
   },
 
   onScanBLE() {
@@ -164,10 +270,21 @@ Page({
         that.addDebugInfo('获取服务列表成功，共' + res.services.length + '个服务')
         for (let i = 0; i < res.services.length; i++) {
           const service = res.services[i]
+          const serviceUuid = service.uuid.toLowerCase()
           that.addDebugInfo('服务 ' + i + ': ' + service.uuid + ', isPrimary=' + service.isPrimary)
-          if (service.isPrimary) {
+
+          // 优先检测BLE配网服务
+          if (service.isPrimary && serviceUuid.startsWith('12340000')) {
             that.setData({ serviceId: service.uuid })
-            that.addDebugInfo('设置 serviceId=' + service.uuid)
+            that.addDebugInfo('设置配网服务 serviceId=' + service.uuid)
+            that.getCharacteristics(service.uuid)
+            return
+          }
+
+          // 检测其他服务
+          if (service.isPrimary && (serviceUuid === '20000000-e8f2-537e-4f6c-d104768a1214' || serviceUuid.startsWith('20000000'))) {
+            that.setData({ serviceId: service.uuid })
+            that.addDebugInfo('设置服务 serviceId=' + service.uuid)
             that.getCharacteristics(service.uuid)
             return
           }
@@ -188,8 +305,11 @@ Page({
         that.addDebugInfo('获取特征值成功')
         const serviceUuid = serviceId.toLowerCase()
 
-        // 检查是否为RGB灯服务
-        if (serviceUuid === '20000000-e8f2-537e-4f6c-d104768a1214') {
+        // 检查是否为BLE配网服务 (UUID前缀匹配)
+        if (serviceUuid.startsWith('12340000')) {
+          that.addDebugInfo('检测到BLE配网服务')
+          that.checkWifiConfigService(res.characteristics)
+        } else if (serviceUuid === '20000000-e8f2-537e-4f6c-d104768a1214') {
           that.addDebugInfo('检测到RGB灯服务')
           that.setupRGBCharacteristics(res.characteristics)
         } else {
@@ -279,7 +399,22 @@ Page({
         that.addDebugInfo('扫描已停止')
         // 清理蓝牙监听器
         wx.offBluetoothDeviceFound()
-        that.setData({ isScanning: false, deviceId: '', serviceId: '', characteristicId: '', switchEnabled: false })
+        that.setData({
+          isScanning: false,
+          deviceId: '',
+          serviceId: '',
+          characteristicId: '',
+          powerCharacteristicId: '',
+          colorCharacteristicId: '',
+          modeCharacteristicId: '',
+          statusCharacteristicId: '',
+          wifiConfigServiceId: '',
+          ssidCharacteristicId: '',
+          passwordCharacteristicId: '',
+          wifiStatusCharacteristicId: '',
+          wifiConfigEnabled: false,
+          switchEnabled: false
+        })
       }
     })
   },
@@ -414,6 +549,50 @@ Page({
     })
   },
 
+  checkWifiConfigService(characteristics) {
+    const that = this
+    let ssidChar, passwordChar, statusChar
+
+    for (let i = 0; i < characteristics.length; i++) {
+      const char = characteristics[i]
+      const uuid = char.uuid.toLowerCase()
+
+      this.addDebugInfo('配网特征 UUID: ' + uuid)
+
+      if (uuid === '12340001-9a8b-4c5d-8e7f-1a2b3c4d5e6f') {
+        ssidChar = char
+        this.addDebugInfo('找到SSID特征：' + char.uuid)
+      } else if (uuid === '12340002-9a8b-4c5d-8e7f-1a2b3c4d5e6f') {
+        passwordChar = char
+        this.addDebugInfo('找到密码特征：' + char.uuid)
+      } else if (uuid === '12340003-9a8b-4c5d-8e7f-1a2b3c4d5e6f') {
+        statusChar = char
+        this.addDebugInfo('找到状态特征：' + char.uuid)
+      }
+    }
+
+    if (ssidChar && passwordChar) {
+      const serviceId = this.data.serviceId
+      this.setData({
+        wifiConfigServiceId: serviceId,
+        ssidCharacteristicId: ssidChar.uuid,
+        passwordCharacteristicId: passwordChar.uuid,
+        wifiStatusCharacteristicId: statusChar ? statusChar.uuid : '',
+        wifiConfigEnabled: true,
+        switchEnabled: true,
+        isRGBDevice: false,
+        deviceType: 'LED灯',
+        deviceTypeIndex: 0
+      })
+      this.addDebugInfo('BLE配网服务检测完成，可以进行WiFi配置')
+      this.setData({ isScanning: false })
+      wx.offBluetoothDeviceFound()
+      wx.stopBluetoothDevicesDiscovery()
+    } else {
+      this.addDebugInfo('未找到BLE配网必需的特征')
+    }
+  },
+
   addDebugInfo(info) {
     const time = new Date().toLocaleTimeString()
     this.setData({
@@ -433,5 +612,37 @@ Page({
     }
     that.addDebugInfo('onColorConfirm 触发')
     that.writeColorToBLE()
+  },
+
+  onWifiDisconnect() {
+    const that = this
+    that.addDebugInfo('断开设备连接...')
+    wx.closeBLEConnection({
+      deviceId: this.data.deviceId,
+      success(res) {
+        that.addDebugInfo('设备已断开连接')
+        // 重置所有状态
+        that.setData({
+          serviceId: '',
+          characteristicId: '',
+          powerCharacteristicId: '',
+          colorCharacteristicId: '',
+          modeCharacteristicId: '',
+          statusCharacteristicId: '',
+          wifiConfigServiceId: '',
+          ssidCharacteristicId: '',
+          passwordCharacteristicId: '',
+          wifiStatusCharacteristicId: '',
+          wifiConfigEnabled: false,
+          switchEnabled: false,
+          isRGBDevice: false,
+          deviceType: 'LED灯',
+          deviceTypeIndex: 0
+        })
+      },
+      fail(err) {
+        that.addDebugInfo('断开连接失败：' + err.errMsg)
+      }
+    })
   }
 })
