@@ -30,15 +30,14 @@ function checkWifiConfigService(characteristics, serviceId, setData, addDebugInf
     result.ssidCharacteristicId = ssidChar.uuid
     result.passwordCharacteristicId = passwordChar.uuid
     result.wifiStatusCharacteristicId = statusChar ? statusChar.uuid : ''
-    result.wifiConfigEnabled = true
-    result.switchEnabled = true
-    
+    result.controlEnabled = true
+
     setData(result)
     addDebugInfo('BLE配网服务检测完成，可以进行WiFi配置')
     return result
   } else {
     addDebugInfo('未找到BLE配网必需的特征（需要SSID和密码特征）')
-    result.switchEnabled = false
+    result.controlEnabled = false
     return result
   }
 }

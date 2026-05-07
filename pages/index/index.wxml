@@ -19,9 +19,9 @@
   </view>
 
   <!-- 设备控制区域 - 连接成功后显示 -->
-  <view wx:if="{{switchEnabled}}">
-    <!-- BLE配网控制区域 - 优先显示 -->
-    <view wx:if="{{wifiConfigEnabled}}" class="wifi-config-section">
+  <view wx:if="{{controlEnabled}}">
+    <!-- BLE配网控制区域 -->
+    <view wx:if="{{deviceType === '蓝牙配网'}}" class="wifi-config-section">
       <text class="section-title">WiFi配网</text>
 
       <view class="control-row">

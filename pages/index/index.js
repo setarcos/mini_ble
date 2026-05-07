@@ -19,11 +19,10 @@ Page({
     ssidCharacteristicId: '',
     passwordCharacteristicId: '',
     wifiStatusCharacteristicId: '',
-    wifiConfigEnabled: false,
     ssid: '',
     password: '',
     switchValue: 0,
-    switchEnabled: false,
+    controlEnabled: false,
     // 设备类型选择
     deviceType: 'LED灯',
     deviceTypeIndex: 0,
@@ -55,9 +54,7 @@ Page({
     const deviceType = this.data.deviceTypes[index]
     this.setData({
       deviceTypeIndex: index,
-      deviceType: deviceType,
-      // 重置相关状态
-      wifiConfigEnabled: false
+      deviceType: deviceType
     })
   },
 
@@ -122,7 +119,7 @@ Page({
 
   startScanBLE() {
     const that = this
-    that.setData({ isScanning: true, deviceId: '', serviceId: '', characteristicId: '', switchEnabled: false })
+    that.setData({ isScanning: true, deviceId: '', serviceId: '', characteristicId: '', controlEnabled: false })
 
     // 先清理之前的蓝牙监听器，避免重复触发
     try {
@@ -272,8 +269,7 @@ Page({
           ssidCharacteristicId: '',
           passwordCharacteristicId: '',
           wifiStatusCharacteristicId: '',
-          wifiConfigEnabled: false,
-          switchEnabled: false
+          controlEnabled: false
         })
       }
     })
@@ -281,7 +277,7 @@ Page({
 
   onSwitchToggle() {
     const that = this
-    if (!this.data.switchEnabled) {
+    if (!this.data.controlEnabled) {
       that.addDebugInfo('请先扫描并连接设备')
       return
     }
@@ -303,7 +299,7 @@ Page({
 
   onColorConfirm() {
     const that = this
-    if (!that.data.switchEnabled) {
+    if (!that.data.controlEnabled) {
       that.addDebugInfo('请先扫描并连接设备')
       return
     }
@@ -334,8 +330,7 @@ Page({
           ssidCharacteristicId: '',
           passwordCharacteristicId: '',
           wifiStatusCharacteristicId: '',
-          wifiConfigEnabled: false,
-          switchEnabled: false
+          controlEnabled: false
         })
       },
       fail(err) {

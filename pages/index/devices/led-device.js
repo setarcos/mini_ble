@@ -3,9 +3,9 @@ function setupLEDCharacteristics(characteristics, serviceId, setData, addDebugIn
   const result = {
     success: false
   }
-  
+
   addDebugInfo('setupLEDCharacteristics, serviceId=' + serviceId)
-  
+
   // 直接信任用户选择，不检查 UUID
   for (let i = 0; i < characteristics.length; i++) {
     const char = characteristics[i]
@@ -14,14 +14,14 @@ function setupLEDCharacteristics(characteristics, serviceId, setData, addDebugIn
       result.characteristicId = char.uuid
       setData({
         characteristicId: char.uuid,
-        switchEnabled: true
+        controlEnabled: true
       })
       addDebugInfo('找到LED灯可写属性：' + char.uuid)
       addDebugInfo('扫描完成，可以使用开关按钮')
       return result
     }
   }
-  
+
   addDebugInfo('未找到LED灯可写属性（需要写属性特征）')
   return result
 }

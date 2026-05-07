@@ -3,7 +3,7 @@ function setupRGBCharacteristics(characteristics, serviceId, setData, addDebugIn
   const result = {
     success: false
   }
-  
+
   addDebugInfo('setupRGBCharacteristics 开始')
   let powerChar, colorChar, modeChar, statusChar
 
@@ -35,14 +35,14 @@ function setupRGBCharacteristics(characteristics, serviceId, setData, addDebugIn
     result.colorCharacteristicId = colorChar.uuid
     result.modeCharacteristicId = modeChar ? modeChar.uuid : ''
     result.statusCharacteristicId = statusChar ? statusChar.uuid : ''
-    result.switchEnabled = true
-    
+    result.controlEnabled = true
+
     setData(result)
     addDebugInfo('扫描完成，可以使用RGB控制功能')
     return result
   } else {
     addDebugInfo('未找到RGB灯必需的特征（需要power和color特征）')
-    result.switchEnabled = false
+    result.controlEnabled = false
     return result
   }
 }
